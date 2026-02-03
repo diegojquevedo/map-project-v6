@@ -1,0 +1,302 @@
+{
+  "project_name": "ocean-research-map",
+  "description": "Interactive single-page web application displaying ocean research organizations on a world map. Features include real-time CSV data loading, Mapbox GL JS integration, search functionality with side panel results, responsive design, and detailed organization popups. Built with React, TypeScript, and Vite for optimal performance and embeddability.",
+  "stack": [
+    "React",
+    "TypeScript",
+    "Vite",
+    "TailwindCSS",
+    "React Router"
+  ],
+  "structure": {
+    "config": [
+      "package.json",
+      "tsconfig.json",
+      "vite.config.ts",
+      "tailwind.config.js",
+      "postcss.config.js"
+    ],
+    "root": [
+      "index.html",
+      ".gitignore",
+      ".env.example"
+    ],
+    "src": [
+      "main.tsx",
+      "App.tsx",
+      "index.css"
+    ],
+    "pages": [
+      "MapPage.tsx"
+    ],
+    "components": [
+      "WorldMap.tsx",
+      "SearchInput.tsx",
+      "SearchResults.tsx",
+      "OrganizationCard.tsx",
+      "OrganizationPopup.tsx"
+    ],
+    "utils": [
+      "types.ts",
+      "csvParser.ts",
+      "mapUtils.ts",
+      "searchUtils.ts"
+    ],
+    "hooks": [
+      "useOrganizations.ts",
+      "useMapbox.ts",
+      "useSearch.ts"
+    ]
+  },
+  "orden_creacion": [
+    "package.json",
+    "tsconfig.json",
+    "vite.config.ts",
+    "tailwind.config.js",
+    "postcss.config.js",
+    "index.html",
+    ".gitignore",
+    ".env.example",
+    "src/index.css",
+    "src/utils/types.ts",
+    "src/utils/csvParser.ts",
+    "src/utils/mapUtils.ts",
+    "src/utils/searchUtils.ts",
+    "src/hooks/useOrganizations.ts",
+    "src/hooks/useMapbox.ts",
+    "src/hooks/useSearch.ts",
+    "src/components/OrganizationPopup.tsx",
+    "src/components/OrganizationCard.tsx",
+    "src/components/SearchInput.tsx",
+    "src/components/SearchResults.tsx",
+    "src/components/WorldMap.tsx",
+    "src/pages/MapPage.tsx",
+    "src/App.tsx",
+    "src/main.tsx"
+  ],
+  "file_descriptions": {
+    "package.json": "NPM configuration with dependencies for React, TypeScript, Vite, TailwindCSS, Mapbox GL JS, Papa Parse for CSV parsing, and React Router DOM",
+    "tsconfig.json": "TypeScript configuration optimized for React with strict mode, ES2020 target, and proper module resolution",
+    "vite.config.ts": "Vite configuration with React plugin and environment variable handling for Mapbox token",
+    "tailwind.config.js": "TailwindCSS configuration with custom colors and responsive breakpoints for map layout",
+    "postcss.config.js": "PostCSS configuration for TailwindCSS processing with autoprefixer",
+    "index.html": "HTML entry point with viewport meta for mobile responsiveness and root div for React mounting",
+    ".gitignore": "Git ignore file excluding node_modules, dist, .env files, and IDE configurations",
+    ".env.example": "Environment variable template showing required VITE_MAPBOX_TOKEN format",
+    "src/main.tsx": "React application entry point that renders App component with strict mode",
+    "src/App.tsx": "Main application component with router setup and global error boundary",
+    "src/index.css": "Global styles with Tailwind directives and custom CSS for Mapbox GL JS integration",
+    "src/utils/types.ts": "TypeScript interfaces for organization data, CSV parsing, map state, and search functionality",
+    "src/utils/csvParser.ts": "CSV parsing utilities using Papa Parse to transform Google Sheets data into typed organization objects",
+    "src/utils/mapUtils.ts": "Mapbox utility functions for coordinate validation, marker creation, and map bounds calculation",
+    "src/utils/searchUtils.ts": "Search functionality utilities for filtering organizations by text across all fields",
+    "src/hooks/useOrganizations.ts": "Custom hook for fetching and managing organization data from CSV URL with error handling",
+    "src/hooks/useMapbox.ts": "Custom hook for Mapbox GL JS initialization, marker management, and map interactions",
+    "src/hooks/useSearch.ts": "Custom hook for search state management and result filtering with debouncing",
+    "src/components/OrganizationPopup.tsx": "Popup component displaying detailed organization information when marker is clicked",
+    "src/components/OrganizationCard.tsx": "Card component for search results with styled layout matching requirements",
+    "src/components/SearchInput.tsx": "Search input component with real-time filtering and clear functionality",
+    "src/components/SearchResults.tsx": "Side panel component displaying filtered organization cards with responsive layout",
+    "src/components/WorldMap.tsx": "Main map component integrating Mapbox GL JS with markers, popups, and responsive design",
+    "src/pages/MapPage.tsx": "Main page component combining map, search input, and results panel with responsive layout"
+  },
+  "typescript_interfaces": {
+    "shared": [
+      "export interface Organization {",
+      "  organizationName: string;",
+      "  mission: string;",
+      "  website: string;",
+      "  contactEmail: string;",
+      "  headquartersAddress: string;",
+      "  street: string;",
+      "  city: string;",
+      "  stateProvince: string;",
+      "  country: string;",
+      "  zipPostalCode: string;",
+      "  siteLatitude: number;",
+      "  siteLongitude: number;",
+      "}",
+      "",
+      "export interface CSVRow {",
+      "  'Organization Name': string;",
+      "  'Mission': string;",
+      "  'Website': string;",
+      "  'Contact Email': string;",
+      "  'Headquarters Address': string;",
+      "  'Street': string;",
+      "  'City': string;",
+      "  'State Province': string;",
+      "  'Country': string;",
+      "  'ZipPostal Code': string;",
+      "  'Site Latitude': string;",
+      "  'Site Longitude': string;",
+      "}",
+      "",
+      "export interface MapState {",
+      "  center: [number, number];",
+      "  zoom: number;",
+      "  selectedOrganization: Organization | null;",
+      "}",
+      "",
+      "export interface SearchState {",
+      "  query: string;",
+      "  results: Organization[];",
+      "  isSearching: boolean;",
+      "}",
+      "",
+      "export interface ApiError {",
+      "  message: string;",
+      "  status?: number;",
+      "}"
+    ],
+    "components": {
+      "WorldMap": "export interface WorldMapProps { organizations: Organization[]; onMarkerClick: (org: Organization) => void; selectedOrganization: Organization | null; className?: string; }",
+      "SearchInput": "export interface SearchInputProps { value: string; onChange: (value: string) => void; onClear: () => void; placeholder?: string; className?: string; }",
+      "SearchResults": "export interface SearchResultsProps { results: Organization[]; onCardClick: (org: Organization) => void; isVisible: boolean; className?: string; }",
+      "OrganizationCard": "export interface OrganizationCardProps { organization: Organization; onClick: (org: Organization) => void; isSelected?: boolean; className?: string; }",
+      "OrganizationPopup": "export interface OrganizationPopupProps { organization: Organization; onClose: () => void; className?: string; }"
+    },
+    "pages": {
+      "MapPage": "export interface MapPageProps {}"
+    },
+    "hooks": {
+      "useOrganizations": "export interface UseOrganizationsReturn { organizations: Organization[]; loading: boolean; error: ApiError | null; refetch: () => Promise<void>; }",
+      "useMapbox": "export interface UseMapboxReturn { mapRef: React.RefObject<HTMLDivElement>; map: mapboxgl.Map | null; addMarkers: (orgs: Organization[]) => void; flyToOrganization: (org: Organization) => void; }",
+      "useSearch": "export interface UseSearchReturn { query: string; setQuery: (query: string) => void; results: Organization[]; clearSearch: () => void; }"
+    }
+  },
+  "component_specs": {
+    "src/components/WorldMap.tsx": {
+      "type": "component",
+      "props": {
+        "organizations": "Organization[] (required)",
+        "onMarkerClick": "(org: Organization) => void (required)",
+        "selectedOrganization": "Organization | null (required)",
+        "className": "string (optional)"
+      },
+      "propsInterface": "WorldMapProps",
+      "exports": [
+        "WorldMap"
+      ],
+      "imports": [
+        "react",
+        "mapbox-gl",
+        "../utils/types",
+        "../hooks/useMapbox"
+      ],
+      "description": "Interactive Mapbox GL JS world map with organization markers, responsive design, and mobile touch support"
+    },
+    "src/components/SearchInput.tsx": {
+      "type": "component",
+      "props": {
+        "value": "string (required)",
+        "onChange": "(value: string) => void (required)",
+        "onClear": "() => void (required)",
+        "placeholder": "string (optional, default: 'Search organizations...')",
+        "className": "string (optional)"
+      },
+      "propsInterface": "SearchInputProps",
+      "exports": [
+        "SearchInput"
+      ],
+      "imports": [
+        "react",
+        "../utils/types"
+      ],
+      "description": "Search input component with clear button and real-time filtering"
+    },
+    "src/components/SearchResults.tsx": {
+      "type": "component",
+      "props": {
+        "results": "Organization[] (required)",
+        "onCardClick": "(org: Organization) => void (required)",
+        "isVisible": "boolean (required)",
+        "className": "string (optional)"
+      },
+      "propsInterface": "SearchResultsProps",
+      "exports": [
+        "SearchResults"
+      ],
+      "imports": [
+        "react",
+        "./OrganizationCard",
+        "../utils/types"
+      ],
+      "description": "Responsive side panel displaying filtered organization cards with scroll functionality"
+    },
+    "src/components/OrganizationCard.tsx": {
+      "type": "component",
+      "props": {
+        "organization": "Organization (required)",
+        "onClick": "(org: Organization) => void (required)",
+        "isSelected": "boolean (optional, default: false)",
+        "className": "string (optional)"
+      },
+      "propsInterface": "OrganizationCardProps",
+      "exports": [
+        "OrganizationCard"
+      ],
+      "imports": [
+        "react",
+        "../utils/types"
+      ],
+      "description": "Styled organization card with black bar, serif title, and sans-serif content matching design requirements"
+    },
+    "src/components/OrganizationPopup.tsx": {
+      "type": "component",
+      "props": {
+        "organization": "Organization (required)",
+        "onClose": "() => void (required)",
+        "className": "string (optional)"
+      },
+      "propsInterface": "OrganizationPopupProps",
+      "exports": [
+        "OrganizationPopup"
+      ],
+      "imports": [
+        "react",
+        "../utils/types"
+      ],
+      "description": "Detailed popup component showing complete organization information with clickable links"
+    },
+    "src/pages/MapPage.tsx": {
+      "type": "page",
+      "props": {},
+      "propsInterface": "MapPageProps",
+      "exports": [
+        "MapPage"
+      ],
+      "imports": [
+        "react",
+        "../components/WorldMap",
+        "../components/SearchInput",
+        "../components/SearchResults",
+        "../hooks/useOrganizations",
+        "../hooks/useSearch",
+        "../utils/types"
+      ],
+      "description": "Main page combining map, search, and results with responsive layout and state management"
+    }
+  },
+  "dependencies": {
+    "dependencies": {
+      "react": "^18.2.0",
+      "react-dom": "^18.2.0",
+      "react-router-dom": "^6.20.0",
+      "mapbox-gl": "^3.0.0",
+      "papaparse": "^5.4.1"
+    },
+    "devDependencies": {
+      "@types/react": "^18.2.0",
+      "@types/react-dom": "^18.2.0",
+      "@types/mapbox-gl": "^3.0.0",
+      "@types/papaparse": "^5.3.0",
+      "@vitejs/plugin-react": "^4.2.0",
+      "typescript": "^5.3.0",
+      "vite": "^5.0.0",
+      "tailwindcss": "^3.4.0",
+      "postcss": "^8.4.0",
+      "autoprefixer": "^10.4.0"
+    }
+  }
+}

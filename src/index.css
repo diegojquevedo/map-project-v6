@@ -1,0 +1,95 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'mapbox-gl/dist/mapbox-gl.css';
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer components {
+  .mapboxgl-popup {
+    @apply max-w-xs;
+  }
+  
+  .mapboxgl-popup-content {
+    @apply rounded-lg shadow-lg border border-gray-200 p-0;
+    font-family: inherit;
+  }
+  
+  .mapboxgl-popup-close-button {
+    @apply text-gray-500 hover:text-gray-700 text-xl font-bold;
+    right: 8px;
+    top: 8px;
+  }
+  
+  .mapboxgl-popup-tip {
+    @apply border-t-gray-200;
+  }
+  
+  .mapboxgl-ctrl-group {
+    @apply rounded-lg shadow-md;
+  }
+  
+  .mapboxgl-ctrl-group button {
+    @apply hover:bg-gray-50;
+  }
+  
+  .search-panel {
+    @apply bg-white border-r border-gray-200 shadow-lg;
+    width: 400px;
+    max-width: 90vw;
+  }
+  
+  .organization-marker {
+    @apply bg-blue-600 border-2 border-white rounded-full shadow-lg cursor-pointer transition-all duration-200 hover:bg-blue-700 hover:scale-110;
+    width: 12px;
+    height: 12px;
+  }
+  
+  .organization-marker.selected {
+    @apply bg-red-600 scale-125;
+  }
+  
+  .search-result-item {
+    @apply p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors duration-150;
+  }
+  
+  .search-result-item:last-child {
+    @apply border-b-0;
+  }
+  
+  .search-result-item.selected {
+    @apply bg-blue-50 border-l-4 border-l-blue-600;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
