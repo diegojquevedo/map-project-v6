@@ -8,47 +8,49 @@ export interface OrganizationCardProps {
   className?: string;
 }
 
+function formatAddress(org: Organization): string {
+  const parts = [org.city, org.stateProvince, org.country].filter(
+    (part) => part != null && part.trim() !== ''
+  );
+  return parts.join(', ');
+}
+
 export const OrganizationCard: React.FC<OrganizationCardProps> = ({
   organization,
   onClick,
   isSelected = false,
   className = ''
 }) => {
-  const handleClick = () => {
-    onClick(organization);
-  };
-
-  const formatAddress = (org: Organization): string => {
-    const parts = [org.city, org.stateProvince, org.country].filter(part => part && part.trim());
-    return parts.join(', ');
-  };
-
   return (
-    <div
-      className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
-        isSelected ? 'ring-2 ring-blue-500 border-blue-500' : ''
-      } ${className}`}
-      onClick={handleClick}
+    <button
+      type="button"
+      className={className}
+      onClick={() => onClick(organization)}
+      style={{
+        width: '100%',
+        textAlign: 'left',
+        border: '1px solid #000',
+        background: isSelected ? '#f5f5f5' : '#fff',
+        cursor: 'pointer',
+        transition: 'background 0.2s',
+        padding: 0
+      }}
+      onMouseEnter={(e) => (e.currentTarget.style.background = '#f5f5f5')}
+      onMouseLeave={(e) => (e.currentTarget.style.background = isSelected ? '#f5f5f5' : '#fff')}
     >
-      <div className="bg-black h-2 rounded-t-lg"></div>
-      <div className="p-4">
-        <h3 className="font-serif text-lg font-semibold text-gray-900 mb-2 leading-tight">
+      <div style={{ height: '1px', width: '100%', background: '#000' }} />
+      <div style={{ padding: '12px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#000', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {organization.organizationName}
         </h3>
-        <p className="font-sans text-sm text-gray-600 mb-3 line-clamp-3">
+        <p style={{ fontSize: '12px', color: '#666', marginBottom: '8px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
           {organization.mission}
         </p>
-        <div className="space-y-1">
-          <p className="font-sans text-xs text-gray-500">
-            {formatAddress(organization)}
-          </p>
-          {organization.website && (
-            <p className="font-sans text-xs text-blue-600 hover:text-blue-800 truncate">
-              {organization.website}
-            </p>
-          )}
-        </div>
+        <p style={{ fontSize: '11px', color: '#999' }}>{formatAddress(organization)}</p>
+        {organization.website?.trim() && (
+          <p style={{ fontSize: '11px', color: '#999', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{organization.website}</p>
+        )}
       </div>
-    </div>
+    </button>
   );
 };

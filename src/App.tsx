@@ -47,8 +47,8 @@ class ErrorBoundary extends React.Component<
             <h1 className="text-xl font-semibold text-gray-900 mb-2">
               Something went wrong
             </h1>
-            <p className="text-gray-600 mb-4">
-              We encountered an error while loading the application. Please try refreshing the page.
+            <p className="text-gray-600 mb-4 font-mono text-sm break-words">
+              {this.state.error?.message ?? 'Unknown error.'} Try refreshing the page.
             </p>
             <button
               onClick={() => window.location.reload()}
@@ -69,12 +69,10 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <Router>
-        <div className="min-h-screen bg-gray-50">
-          <Routes>
-            <Route path="/" element={<MapPage />} />
-            <Route path="*" element={<MapPage />} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/" element={<MapPage />} />
+          <Route path="*" element={<MapPage />} />
+        </Routes>
       </Router>
     </ErrorBoundary>
   );

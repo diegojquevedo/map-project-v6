@@ -21,17 +21,18 @@ export const searchOrganizations = (organizations: Organization[], query: string
   const searchTerm = query.toLowerCase().trim();
   
   return organizations.filter((org) => {
+    const safeStr = (s: string | undefined | null): string => (s ?? '').toLowerCase();
     return (
-      org.organizationName.toLowerCase().includes(searchTerm) ||
-      org.mission.toLowerCase().includes(searchTerm) ||
-      org.website.toLowerCase().includes(searchTerm) ||
-      org.contactEmail.toLowerCase().includes(searchTerm) ||
-      org.headquartersAddress.toLowerCase().includes(searchTerm) ||
-      org.street.toLowerCase().includes(searchTerm) ||
-      org.city.toLowerCase().includes(searchTerm) ||
-      org.stateProvince.toLowerCase().includes(searchTerm) ||
-      org.country.toLowerCase().includes(searchTerm) ||
-      org.zipPostalCode.toLowerCase().includes(searchTerm)
+      safeStr(org.organizationName).includes(searchTerm) ||
+      safeStr(org.mission).includes(searchTerm) ||
+      safeStr(org.website).includes(searchTerm) ||
+      safeStr(org.contactEmail).includes(searchTerm) ||
+      safeStr(org.headquartersAddress).includes(searchTerm) ||
+      safeStr(org.street).includes(searchTerm) ||
+      safeStr(org.city).includes(searchTerm) ||
+      safeStr(org.stateProvince).includes(searchTerm) ||
+      safeStr(org.country).includes(searchTerm) ||
+      safeStr(org.zipPostalCode).includes(searchTerm)
     );
   });
 };

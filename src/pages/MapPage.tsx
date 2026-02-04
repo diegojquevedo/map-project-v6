@@ -1,146 +1,158 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { WorldMap } from '../components/WorldMap';
 import { SearchInput } from '../components/SearchInput';
-import { SearchResults } from '../components/SearchResults';
+import { OrganizationCard } from '../components/OrganizationCard';
 import { OrganizationPopup } from '../components/OrganizationPopup';
-import { Organization, SearchState } from '../utils/types';
+import { Organization } from '../utils/types';
 import { searchOrganizations } from '../utils/searchUtils';
 
-export interface MapPageProps {}
+const getCsvUrl = (): string => {
+  const env = (import.meta as { env?: Record<string, string> }).env;
+  return env?.VITE_CSV_DATA_URL ?? '';
+};
 
-export const MapPage: React.FC<MapPageProps> = () => {
+// Simple CSV parser that handles quoted fields
+const parseCSVLine = (line: string): string[] => {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+    
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        current += '"';
+        i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+};
+
+export const MapPage: React.FC = () => {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
-  const [searchState, setSearchState] = useState<SearchState>({
-    query: '',
-    results: [],
-    isSearching: false
-  });
-  const [showResults, setShowResults] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    const loadOrganizations = async () => {
+    const csvUrl = getCsvUrl().trim();
+    if (!csvUrl) {
+      setError('VITE_CSV_DATA_URL is not set in .env');
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    const load = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/data/organizations.csv');
-        if (!response.ok) {
-          throw new Error(`Failed to load data: ${response.statusText}`);
-        }
+        setError(null);
+        const response = await fetch(csvUrl);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const csvText = await response.text();
-        
-        // Simple CSV parsing without external parser
-        const lines = csvText.split('\n');
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-        const data = lines.slice(1).filter(line => line.trim()).map(line => {
-          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+        if (cancelled) return;
+
+        const lines = csvText.split('\n').filter(line => line.trim());
+        if (lines.length < 2) {
+          setOrganizations([]);
+          return;
+        }
+
+        const toNum = (s: string | undefined): number => {
+          if (!s || s.trim() === '') return 0;
+          const n = Number.parseFloat(s.trim());
+          return Number.isNaN(n) ? 0 : n;
+        };
+
+        const headers = parseCSVLine(lines[0]);
+        const data = lines.slice(1).map(line => {
+          const values = parseCSVLine(line);
           const row: Record<string, string> = {};
-          headers.forEach((header: string, index: number) => {
-            row[header] = values[index] || '';
+          headers.forEach((header: string, i: number) => {
+            row[header] = values[i] ?? '';
           });
           return row;
         });
 
-        const orgs: Organization[] = data.map((row: Record<string, string>) => ({
-          organizationName: row['Organization Name'] || '',
-          mission: row['Mission'] || '',
-          website: row['Website'] || '',
-          contactEmail: row['Contact Email'] || '',
-          headquartersAddress: row['Headquarters Address'] || '',
-          street: row['Street'] || '',
-          city: row['City'] || '',
-          stateProvince: row['State Province'] || '',
-          country: row['Country'] || '',
-          zipPostalCode: row['ZipPostal Code'] || '',
-          siteLatitude: parseFloat(row['Site Latitude']) || 0,
-          siteLongitude: parseFloat(row['Site Longitude']) || 0
-        })).filter((org: Organization) => 
-          org.organizationName.trim() !== '' && 
-          !isNaN(org.siteLatitude) && 
-          !isNaN(org.siteLongitude)
-        );
+        const orgs: Organization[] = data
+          .map((row: Record<string, string>) => ({
+            organizationName: row['Organization Name'] ?? '',
+            mission: row['Mission'] ?? '',
+            website: row['Website'] ?? '',
+            contactEmail: row['Contact Email'] ?? '',
+            headquartersAddress: row['Headquarters Address'] ?? '',
+            street: row['Street'] ?? '',
+            city: row['City'] ?? '',
+            stateProvince: row['State Province'] ?? '',
+            country: row['Country'] ?? '',
+            zipPostalCode: row['ZipPostal Code'] ?? '',
+            siteLatitude: toNum(row['Site Latitude']),
+            siteLongitude: toNum(row['Site Longitude'])
+          }))
+          .filter(
+            (org: Organization) =>
+              org.organizationName.trim() !== '' &&
+              org.siteLatitude !== 0 &&
+              org.siteLongitude !== 0 &&
+              !Number.isNaN(org.siteLatitude) &&
+              !Number.isNaN(org.siteLongitude) &&
+              org.siteLatitude >= -90 &&
+              org.siteLatitude <= 90 &&
+              org.siteLongitude >= -180 &&
+              org.siteLongitude <= 180
+          );
 
+        if (cancelled) return;
         setOrganizations(orgs);
-        setSearchState(prev => ({ ...prev, results: orgs }));
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load organizations');
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load data');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
-    loadOrganizations();
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const searchResults = useMemo(() => {
-    return searchOrganizations(organizations, searchState.query);
-  }, [organizations, searchState.query]);
-
-  useEffect(() => {
-    setSearchState(prev => ({
-      ...prev,
-      results: searchResults,
-      isSearching: false
-    }));
-  }, [searchResults]);
-
-  const handleSearchChange = (query: string) => {
-    setSearchState(prev => ({
-      ...prev,
-      query,
-      isSearching: true
-    }));
-    setShowResults(query.trim() !== '');
-  };
-
-  const handleSearchClear = () => {
-    setSearchState({
-      query: '',
-      results: organizations,
-      isSearching: false
-    });
-    setShowResults(false);
-  };
-
-  const handleMarkerClick = (org: Organization) => {
-    setSelectedOrganization(org);
-  };
-
-  const handleCardClick = (org: Organization) => {
-    setSelectedOrganization(org);
-    setShowResults(false);
-  };
-
-  const handleClosePopup = () => {
-    setSelectedOrganization(null);
-  };
+  const filteredOrgs = useMemo(() => {
+    if (!searchQuery.trim()) return organizations;
+    return searchOrganizations(organizations, searchQuery);
+  }, [organizations, searchQuery]);
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading ocean research organizations...</p>
-        </div>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff' }}>
+        <p style={{ color: '#666', fontSize: '14px' }}>Loading…</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 mb-4">
-            <svg className="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Data</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+      <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', padding: '20px' }}>
+        <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+          <p style={{ color: '#000', fontWeight: 600, marginBottom: '8px' }}>Error loading data</p>
+          <p style={{ color: '#666', fontSize: '14px', marginBottom: '16px' }}>{error}</p>
           <button
+            type="button"
             onClick={() => window.location.reload()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
+            style={{ border: '1px solid #000', background: '#fff', color: '#000', padding: '8px 16px', fontSize: '14px', cursor: 'pointer' }}
           >
             Retry
           </button>
@@ -150,51 +162,50 @@ export const MapPage: React.FC<MapPageProps> = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-200 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Ocean Research Organizations</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Explore {organizations.length} research organizations worldwide
-              </p>
-            </div>
-            <div className="w-full sm:w-96">
-              <SearchInput
-                value={searchState.query}
-                onChange={handleSearchChange}
-                onClear={handleSearchClear}
-                placeholder="Search organizations, missions, locations..."
-                className="w-full"
-              />
-            </div>
-          </div>
+    <div style={{ width: '100vw', height: '100vh', display: 'flex', overflow: 'hidden' }}>
+      {/* Panel izquierdo: 30% */}
+      <div style={{ width: '30%', borderRight: '1px solid #000', background: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ borderBottom: '1px solid #000', padding: '12px' }}>
+          <SearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            onClear={() => setSearchQuery('')}
+            placeholder="Search…"
+          />
         </div>
-      </header>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
+          <p style={{ color: '#666', fontSize: '12px', marginBottom: '12px' }}>
+            {filteredOrgs.length} organization{filteredOrgs.length !== 1 ? 's' : ''}
+          </p>
+          {filteredOrgs.length === 0 ? (
+            <p style={{ color: '#666', fontSize: '14px' }}>No organizations match.</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {filteredOrgs.map((org, i) => (
+                <OrganizationCard
+                  key={i}
+                  organization={org}
+                  onClick={setSelectedOrganization}
+                  isSelected={selectedOrganization === org}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
 
-      <div className="flex-1 relative">
+      {/* Mapa derecho: 70% */}
+      <div style={{ width: '70%', position: 'relative' }}>
         <WorldMap
           organizations={organizations}
-          onMarkerClick={handleMarkerClick}
+          onMarkerClick={setSelectedOrganization}
           selectedOrganization={selectedOrganization}
-          className="w-full h-full"
         />
-
-        <SearchResults
-          results={searchState.results}
-          onCardClick={handleCardClick}
-          isVisible={showResults}
-          className="absolute top-4 left-4 w-80 max-h-[calc(100vh-200px)] overflow-y-auto bg-white rounded-lg shadow-lg border border-gray-200 z-20"
-        />
-
-        {selectedOrganization && (
-          <OrganizationPopup
-            organization={selectedOrganization}
-            onClose={handleClosePopup}
-          />
-        )}
       </div>
+
+      {selectedOrganization && (
+        <OrganizationPopup organization={selectedOrganization} onClose={() => setSelectedOrganization(null)} />
+      )}
     </div>
   );
 };

@@ -40,133 +40,107 @@ export const OrganizationPopup: React.FC<OrganizationPopupProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 ${className}`}
       onClick={handleBackdropClick}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '20px'
+      }}
     >
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center rounded-t-lg">
-          <h2 className="text-xl font-semibold text-gray-900 truncate">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: '#fff',
+          borderRadius: '4px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          maxWidth: '400px',
+          width: '100%',
+          maxHeight: '80vh',
+          overflowY: 'auto',
+          border: '1px solid #000'
+        }}
+      >
+        <div style={{ borderBottom: '1px solid #000', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#000' }}>
             {organization.organizationName}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-            aria-label="Close popup"
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '24px',
+              lineHeight: 1,
+              cursor: 'pointer',
+              color: '#666',
+              padding: 0,
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            ×
           </button>
         </div>
 
-        <div className="px-6 py-4 space-y-6">
+        <div style={{ padding: '16px' }}>
           {organization.mission && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Mission</h3>
-              <p className="text-gray-900 leading-relaxed">{organization.mission}</p>
+            <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '12px', fontWeight: 600, color: '#666', marginBottom: '4px', textTransform: 'uppercase' }}>Mission</h3>
+              <p style={{ fontSize: '14px', color: '#000', lineHeight: 1.5, margin: 0 }}>{organization.mission}</p>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-1">
-                Contact Information
-              </h3>
-              
-              {organization.website && (
-                <div>
-                  <span className="text-sm font-medium text-gray-600">Website:</span>
-                  <div className="mt-1">
-                    <a
-                      href={formatWebsiteUrl(organization.website)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 underline break-all"
-                    >
-                      {organization.website}
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {organization.contactEmail && (
-                <div>
-                  <span className="text-sm font-medium text-gray-600">Email:</span>
-                  <div className="mt-1">
-                    <a
-                      href={`mailto:${organization.contactEmail}`}
-                      className="text-blue-600 hover:text-blue-800 underline break-all"
-                    >
-                      {organization.contactEmail}
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-gray-700 border-b border-gray-200 pb-1">
-                Location
-              </h3>
-              
-              {(organization.headquartersAddress || formatAddress()) && (
-                <div>
-                  <span className="text-sm font-medium text-gray-600">Address:</span>
-                  <div className="mt-1 text-gray-900">
-                    {organization.headquartersAddress || formatAddress()}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <span className="text-sm font-medium text-gray-600">Coordinates:</span>
-                <div className="mt-1 text-gray-900 font-mono text-sm">
-                  {organization.siteLatitude.toFixed(6)}, {organization.siteLongitude.toFixed(6)}
-                </div>
+          <div style={{ marginBottom: '16px' }}>
+            <h3 style={{ fontSize: '12px', fontWeight: 600, color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Contact</h3>
+            {organization.website && (
+              <div style={{ marginBottom: '8px' }}>
+                <span style={{ fontSize: '12px', color: '#666' }}>Website: </span>
+                <a
+                  href={formatWebsiteUrl(organization.website)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: '12px', color: '#000', textDecoration: 'underline' }}
+                >
+                  {organization.website}
+                </a>
               </div>
-            </div>
+            )}
+            {organization.contactEmail && (
+              <div>
+                <span style={{ fontSize: '12px', color: '#666' }}>Email: </span>
+                <a
+                  href={`mailto:${organization.contactEmail}`}
+                  style={{ fontSize: '12px', color: '#000', textDecoration: 'underline' }}
+                >
+                  {organization.contactEmail}
+                </a>
+              </div>
+            )}
           </div>
 
-          {(organization.city || organization.stateProvince || organization.country) && (
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Location Details</h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                {organization.city && (
-                  <div>
-                    <span className="font-medium text-gray-600">City:</span>
-                    <div className="text-gray-900">{organization.city}</div>
-                  </div>
-                )}
-                {organization.stateProvince && (
-                  <div>
-                    <span className="font-medium text-gray-600">State/Province:</span>
-                    <div className="text-gray-900">{organization.stateProvince}</div>
-                  </div>
-                )}
-                {organization.country && (
-                  <div>
-                    <span className="font-medium text-gray-600">Country:</span>
-                    <div className="text-gray-900">{organization.country}</div>
-                  </div>
-                )}
-                {organization.zipPostalCode && (
-                  <div>
-                    <span className="font-medium text-gray-600">Postal Code:</span>
-                    <div className="text-gray-900">{organization.zipPostalCode}</div>
-                  </div>
-                )}
+          <div>
+            <h3 style={{ fontSize: '12px', fontWeight: 600, color: '#666', marginBottom: '8px', textTransform: 'uppercase' }}>Location</h3>
+            {(organization.headquartersAddress || formatAddress()) && (
+              <div style={{ marginBottom: '8px' }}>
+                <span style={{ fontSize: '12px', color: '#666' }}>Address: </span>
+                <span style={{ fontSize: '12px', color: '#000' }}>{organization.headquartersAddress || formatAddress()}</span>
               </div>
+            )}
+            <div>
+              <span style={{ fontSize: '12px', color: '#666' }}>Coordinates: </span>
+              <span style={{ fontSize: '12px', color: '#000', fontFamily: 'monospace' }}>
+                {organization.siteLatitude.toFixed(6)}, {organization.siteLongitude.toFixed(6)}
+              </span>
             </div>
-          )}
-        </div>
-
-        <div className="sticky bottom-0 bg-gray-50 px-6 py-4 border-t border-gray-200 rounded-b-lg">
-          <button
-            onClick={onClose}
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors font-medium"
-          >
-            Close
-          </button>
+          </div>
         </div>
       </div>
     </div>

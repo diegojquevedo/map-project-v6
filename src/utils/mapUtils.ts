@@ -24,20 +24,22 @@ export const isValidOrganization = (org: Organization): boolean => {
     org.organizationName.trim() !== '' &&
     validateCoordinates(org.siteLatitude, org.siteLongitude) &&
     !isNaN(org.siteLatitude) &&
-    !isNaN(org.siteLongitude)
+    !isNaN(org.siteLongitude) &&
+    org.siteLatitude !== 0 &&
+    org.siteLongitude !== 0
   );
 };
 
 export const createMarkerElement = (organization: Organization): HTMLDivElement => {
   const el = document.createElement('div');
   el.className = 'custom-marker';
-  el.style.width = '20px';
-  el.style.height = '20px';
+  el.style.width = '16px';
+  el.style.height = '16px';
   el.style.borderRadius = '50%';
-  el.style.backgroundColor = '#3B82F6';
-  el.style.border = '2px solid #FFFFFF';
+  el.style.backgroundColor = '#000';
+  el.style.border = '2px solid #fff';
   el.style.cursor = 'pointer';
-  el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+  el.style.boxShadow = '0 2px 6px rgba(0,0,0,0.4)';
   el.setAttribute('data-organization', organization.organizationName);
   return el;
 };
