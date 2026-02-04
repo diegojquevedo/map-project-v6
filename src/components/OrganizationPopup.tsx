@@ -10,7 +10,6 @@ export interface OrganizationPopupProps {
 export const OrganizationPopup: React.FC<OrganizationPopupProps> = ({
   organization,
   onClose,
-  className = ''
 }) => {
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
